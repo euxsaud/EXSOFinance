@@ -1,0 +1,67 @@
+<nav class="flex justify-between items-center gap-2">
+	<label class="floating-label">
+		<span>Date range:</span>
+		<button popovertarget="daterange1" class="input input-border" style="anchor-name:--cally1" x-text="filter.date.from && filter.date.to ? `${filter.date.formattedFrom} - ${filter.date.formattedTo}` : 'Set range dates'"></button>
+	</label>
+	<div popover id="daterange1" class="dropdown bg-base-100 rounded-box shadow-lg" style="position-anchor:--cally1">
+		<calendar-range class="cally" name="daterange" @change="filter_Apply">
+			<calendar-month></calendar-month>
+		</calendar-range>
+	</div>
+
+	<label class="floating-label">
+		<span>Category:</span>
+		<select class="select" name="category" x-model="filter.category" @change="filter_Apply">
+			<option disabled selected>Filter by category</option>
+			<option value="all">All Categories</option>
+			<template x-for="(catgroup, index) in Object.keys(options.groupedCategories)" :key="index">
+				<optgroup class="capitalize" :label="catgroup">
+					<template x-for="category in options.groupedCategories[catgroup]" :key="category.value">
+						<option :value="category.value" :style="{ backgroundColor: category.style[0], color: category.style[1] }" x-text="category.value"></option>
+					</template>
+				</optgroup>
+			</template>
+		</select>
+	</label>
+
+	<label class="floating-label">
+		<span>Account:</span>
+		<select class="select" name="account" x-model="filter.account" @change="filter_Apply">
+			<option disabled selected>Filter by account</option>
+			<option value="all">All Accounts</option>
+			<template x-for="method in options.accounts" :key="method.value">
+				<option class="capitalize" :value="method.value" :style="{ backgroundColor: method.style[0], color: method.style[1] }" x-text="method.value"></option>
+			</template>
+		</select>
+	</label>
+
+	<label class="floating-label">
+		<span>Transaction Methods</span>
+		<select class="select" name="transaction" x-model="filter.transaction" @change="filter_Apply">
+			<option disabled selected>Filter by Transaction Methods</option>
+			<option value="all">All Transaction Methods</option>
+			<template x-for="type in options.transactions" :key="type.value">
+				<option class="capitalize" :value="type.value" :style="{ backgroundColor: type.style[0], color: type.style[1] }" x-text="type.value"></option>
+			</template>
+		</select>
+	</label>
+
+	<label class="floating-label">
+		<span>Currency:</span>
+		<select class="select" name="currency" x-model="filter.currency" @change="filter_Apply">
+			<option value="" disabled :selected="!options.currencies.length">Filter by Currency</option>
+			<template x-for="currency in options.currencies" :key="currency.value">
+				<option :value="currency.value" :selected="currency.value === filter.currency" x-text="currency.label"></option>
+			</template>
+		</select>
+	</label>
+
+	<div class="min-w-[200px] tooltip" data-tip="Filter by Amount">
+		<input type="range" class="range range-primary" min="0" :max="filter.maxAmount" step="10" value="0" name="amount" x-model="filter.amount" @change.debounce="filter_Apply" />
+
+		<div class="flex justify-between px-2.5 text-xs">
+			<span>$0</span>
+			<span x-text="filter.amount >= filter.maxAmount || filter.amount <= 0 ? 'Any Amount' : `$${filter.amount}`"></span>
+		</div>
+	</div>
+</nav>

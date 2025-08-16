@@ -1,0 +1,72 @@
+<main class="flex flex-wrap w-full 2xl:max-w-7xl xl:max-w-6xl mx-auto my-4 gap-4" x-data="HOME">
+
+	{{> home/add_record_form }}
+
+	<section class="block min-w-6xl w-full" x-show="!onwait">
+		{{> home/nav_filters}}
+
+		<hr class="border-gray-200 my-4" />
+
+		<div class="overflow-x-auto rounded-box border border-base-content/5 pb-15 bg-base-100">
+			<table class="table table-xs table-zebra">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Date</th>
+						<th>Category</th>
+						<th>Payee</th>
+						<th>Description</th>
+						<th>Transaction</th>
+						<th>Accounts</th>
+						<th>Amount</th>
+						<th width="24px">&nbsp;</th>
+					</tr>
+				</thead>
+
+				<tbody>
+					<template x-for="record in DATA" :key="record.id">
+						<tr @dblclick="form_Edit(record)">
+							<td class="text-gray-400" x-text="record.id">#ID</td>
+							<td x-text="util_FormatDate(record.date)">[DATE]</td>
+							<td>
+								<span class="badge capitalize" :style="util_getStyleOption('categories', record.category)" x-text="record.category">[CATEGORY]</span>
+							</td>
+							<td x-text="record.payee">[PAYEE]</td>
+							<td x-text="record.description">[DESCRIPTION]</td>
+							<td>
+								<span class="badge capitalize" :style="util_getStyleOption('transactions', record.transaction)" x-text="record.transaction">[TRANSACTION]</span>
+							</td>
+							<td>
+								<span class="badge capitalize" :style="util_getStyleOption('accounts', record.account)" x-text="record.account">[ACCOUNTS]</span>
+							</td>
+							<td><span class="font-bold" x-text="'$' + (typeof record.amount !== 'number' ? parseFloat(record.amount) : record.amount).toFixed(2)">[AMOUNT]</span></td>
+							<td>
+								<div class="dropdown dropdown-left dropdown-center">
+									<div tabindex="0" role="button" class="btn btn-xs btn-ghost px-0.5">
+										<span class="material-symbols-outlined">more_vert</span>
+									</div>
+									<ul tabindex="0" class="menu dropdown-content bg-base-300 rounded-box z-1 p-2 shadow-sm">
+										<li><a @click="form_Edit(record)">Edit</a></li>
+										<li><a @click="form_Delete(record)">Delete</a></li>
+									</ul>
+								</div>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+		</div>
+
+	</section>
+
+	<button class="btn btn-success tooltip tooltip-left w-18 h-18 rounded-full fixed bottom-4 right-4 z-50" @click="add_record_modal.showModal()" data-tip="Add new record">
+		<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+		</svg>
+	</button>
+
+  <!-- Loading Spinner -->
+  <div class="flex justify-center w-full" x-show="onwait">
+    <span class="loading loading-spinner loading-xl text-primary"></span>
+  </div>
+</main>

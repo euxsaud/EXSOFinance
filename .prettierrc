@@ -1,0 +1,17 @@
+{
+	"tabWidth": 4,
+	"useTabs": true,
+	"printWidth": 140,
+	"singleQuote": true,
+	"overrides": [
+		{
+			"files": "*.hbs",
+			"options": {
+				"printWidth": 999999,
+				"singleQuote": false,
+				"bracketSpacing": false,
+				"proseWrap": "preserve"
+			}
+		}
+	]
+}

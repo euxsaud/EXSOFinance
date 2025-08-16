@@ -1,0 +1,147 @@
+<main class="flex flex-wrap flex-col justify-center w-full 2xl:max-w-7xl xl:max-w-6xl mx-auto my-4 gap-4 relative" x-data="KPIS">
+
+	<div class="flex justify-between w-full">
+		<h2 class="text-2xl font-bold">Key Performance Indicators</h2>
+
+		<div class="flex items-center gap-2">
+			<label class="floating-label">
+				<span>Choose currency:</span>
+				<select class="select" name="currency" x-model="filter.currency" @change="filter_Apply">
+					<option value="" disabled :selected="!opts.currencies.length">Filter by Currency</option>
+					<template x-for="currency in opts.currencies" :key="currency.value">
+						<option :value="currency.value" :selected="currency.value === filter.currency" x-text="currency.label"></option>
+					</template>
+				</select>
+			</label>
+
+			<div class="dropdown dropdown-end">
+				<div tabindex="0" role="button" class="btn btn-primary rounded-full">Indicators from: <span x-text="`${filter.date.formattedFrom} to ${filter.date.formattedTo}`">[DATE-FROM - DATE-TO]</span></div>
+				<div tabindex="0" class="dropdown-content bg-base-100 rounded-box shadow-lg">
+					<div class="join block w-full text-center p-2">
+						<input type="radio" name="datemode" value="bymonth" class="join-item btn btn-sm" aria-label="By month" x-model="filter.date.pickmode" />
+						<input type="radio" name="datemode" value="byrange" class="join-item btn btn-sm" aria-label="By range" x-model="filter.date.pickmode" />
+					</div>
+
+					<calendar-date class="cally" :class="{ hidden: filter.date.pickmode !== 'bymonth' }" name="datemonth" @change="filter_SetDate">
+						<calendar-month></calendar-month>
+					</calendar-date>
+
+					<calendar-range class="cally" :class="{ hidden: filter.date.pickmode !== 'byrange' }" name="daterange" @change="filter_SetDate">
+						<calendar-month></calendar-month>
+					</calendar-range>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="stats shadow">
+		<div class="stat">
+			<div class="stat-title font-bold">Total Income</div>
+			<div class="stat-value" :style="{ color: stats.income.style[0] || 'var(--color-success)' }" x-text="util_FormatCurrency(stats.income.total)">[TOTAL]</div>
+			<div class="stat-desc"><span x-text="stats.income.transactions">[SOURCE]</span> income sources this period</div>
+			<div class="stat-figure" :style="{ color: stats.income.style[0] || 'var(--color-success)' }">
+				<span class="material-symbols-outlined text-4xl!">trending_up</span>
+			</div>
+		</div>
+
+		<div class="stat">
+			<div class="stat-title font-bold">Total Expenses</div>
+			<div class="stat-value" :style="{ color: stats.expense.style[0] || 'var(--color-error)' }" x-text="util_FormatCurrency(-stats.expense.total)">[TOTAL]</div>
+			<div class="stat-desc"><span x-text="stats.expense.transactions">[SOURCE]</span> expense sources this period</div>
+			<div class="stat-figure" :style="{ color: stats.expense.style[0] || 'var(--color-error)' }">
+				<span class="material-symbols-outlined text-4xl!">trending_down</span>
+			</div>
+		</div>
+
+		<div class="stat">
+			<div class="stat-title font-bold">Investments</div>
+			<div class="stat-value" :style="{ color: stats.investment.style[0] || 'var(--color-secondary)' }" x-text="onwait ? '...' : util_FormatCurrency(-stats.investment.total)">[TOTAL]</div>
+			<div class="stat-desc"><span x-text="stats.investment.transactions">[SOURCE]</span> investment(s) made this period</div>
+			<div class="stat-figure" :style="{ color: stats.investment.style[0] || 'var(--color-secondary)' }">
+				<span class="material-symbols-outlined text-4xl!">finance_mode</span>
+			</div>
+		</div>
+
+		<div class="stat">
+			<div class="stat-title font-bold">Balance</div>
+			<div class="stat-value text-blue-500" x-text="util_FormatCurrency(stats.balance.total)">[TOTAL]</div>
+			<div class="stat-desc">Profit is <span x-text="`${stats.balance.profit}%`">[PROFIT]</span></div>
+			<div class="stat-figure text-blue-500">
+				<span class="material-symbols-outlined text-4xl!">paid</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="divider w-full"></div>
+
+	<div class="flex flex-wrap justify-between w-full gap-2">
+		<div class="w-full">
+			<h2 class="text-xl font-bold">Accounts Overview</h2>
+		</div>
+
+		<template x-for="account in opts.accounts" :key="account.value">
+			<template x-if="account.currency === filter.currency">
+				<div class="card w-64 shadow-xl" :style="{ backgroundColor: account.style[0], color: account.style[1] }">
+					<div class="card-body p-4">
+						<h2 class="card-title justify-between mb-3">
+							<span class="flex flex-col">
+								<span class="text-lg uppercase" x-text="account.value">[ACCOUNT NAME]</span>
+								<span class="text-xs underline" x-text="account.provider">[ACCOUNT PROVIDER]</span>
+							</span>
+							<span class="badge badge-sm badge-neutral capitalize" x-text="account.type">[ACCOUNT TYPE]</span>
+						</h2>
+						<div class="flex justify-between gap-2">
+							<div>
+								<span class="block text-xs">Expenses:</span>
+								<span class="font-bold" x-text="util_FormatCurrency(stats_TotalCard('expense', account.value))">[AMOUNT]</span>
+							</div>
+							
+							<div>
+								<span class="block text-xs">Income:</span>
+								<span class="font-bold" x-text="util_FormatCurrency(stats_TotalCard('income', account.value))">[AMOUNT]</span>
+							</div>
+							<div>
+								<span class="block text-xs">Limit:</span>
+								<span class="font-bold" x-text="!account.limit ? 'No defined' : util_FormatCurrency(account.limit)">[LIMIT]</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</template>
+		</template>
+	</div>
+
+	<div class="divider w-full"></div>
+
+	<div class="flex flex-wrap w-full">
+		<h2 class="text-xl font-bold w-full mb-3">Expenses Overview</h2>
+
+		<div id="category_expenses_charts" class="w-1/2 h-100"></div>
+
+		<div id="accounts_expenses_charts" class="w-1/2 h-100"></div>
+
+		<div id="history_balance_charts" class="w-full h-100"></div>
+	</div>
+
+	<div class="flex flex-col py-6 w-full h-screen absolute top-[-10px] left-0 z-50 bg-base-100" x-show="onwait">
+		<div class="flex justify-between w-full">
+			<div class="skeleton w-64 h-38"></div>
+			<div class="skeleton w-64 h-38"></div>
+			<div class="skeleton w-64 h-38"></div>
+			<div class="skeleton w-64 h-38"></div>
+		</div>
+		<div class="divider w-full my-4"></div>
+		<div class="flex justify-between w-full">
+			<div class="skeleton w-64 h-38"></div>
+			<div class="skeleton w-64 h-38"></div>
+			<div class="skeleton w-64 h-38"></div>
+			<div class="skeleton w-64 h-38"></div>
+		</div>
+		<div class="divider w-full my-4"></div>
+		<div class="grid grid-cols-2 gap-4">
+			<div class="skeleton h-58"></div>
+			<div class="skeleton h-58"></div>
+			<div class="skeleton col-span-2 h-58"></div>
+		</div>
+	</div>
+</main>

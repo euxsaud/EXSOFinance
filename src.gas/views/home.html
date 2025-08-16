@@ -1,0 +1,246 @@
+<main class="flex flex-wrap w-full 2xl:max-w-7xl xl:max-w-6xl mx-auto my-4 gap-4" x-data="HOME">
+  <!-- Main Form Dialog -->
+  <dialog class="modal" id="add_record_modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg" x-text="form_editMode ? 'Edit Record' : 'Add New Record'">
+        [Add New Record/Edit record]
+      </h3>
+
+      <hr class="border-gray-200 my-2" />
+
+      <form x-ref="MainForm" class="grid grid-cols-1 gap-3" @submit.prevent="form_Submit">
+        <div>
+          <legend class="font-semibold">Date*</legend>
+          <input type="date" class="input input-md w-full" name="date" x-model="form_fields.date" :value="form_fields.date" required />
+        </div>
+
+        <div>
+          <legend class="font-semibold">
+            Category*
+          </legend>
+          <select class="select w-full" name="category" x-model="form_fields.category" required>
+            <option value="" disabled selected>
+              Select a category
+            </option>
+            <template x-for="(catgroup, index) in Object.keys(opts.groupedCategories)" :key="index">
+              <optgroup :label="catgroup">
+                <template x-for="category in opts.groupedCategories[catgroup]" :key="category.value">
+                  <option class="capitalize" :value="category.value" :style="{ backgroundColor: category.style[0], color: category.style[1] }" x-text="category.value"></option>
+                </template>
+              </optgroup>
+            </template>
+          </select>
+        </div>
+
+        <div>
+          <legend class="font-semibold">
+            Payee
+          </legend>
+          <input class="input w-full" type="text" name="payee" placeholder="Write the name of the payee" x-model="form_fields.payee" />
+        </div>
+
+        <div>
+          <legend class="font-semibold">
+            Description
+          </legend>
+          <textarea class="textarea w-full" name="description" placeholder="Write a brief description" x-model="form_fields.description"></textarea>
+        </div>
+
+        <div>
+          <legend class="font-semibold">
+            Transaction Method*
+          </legend>
+          <select class="select w-full" name="type" x-model="form_fields.transaction" required>
+            <option value="" disabled selected>
+              Select transaction type
+            </option>
+            <template x-for="type in opts.transactions" :key="type.value">
+              <option :value="type.value" :style="{ backgroundColor: type.style[0], color: type.style[1] }" x-text="type.value"></option>
+            </template>
+          </select>
+        </div>
+
+        <div>
+          <legend class="font-semibold">
+            Account*
+          </legend>
+          <select class="select w-full" name="paymentMethod" x-model="form_fields.account" required>
+            <option value="" disabled selected>
+              Select payment method
+            </option>
+            <template x-for="account in opts.accounts" :key="account.value">
+              <option :value="account.value" :style="{ backgroundColor: account.style[0], color: account.style[1] }" x-text="account.value"></option>
+            </template>
+          </select>
+        </div>
+
+        <div class="w-full">
+          <legend class="font-semibold">Amount*</legend>
+          <div class="join w-full">
+            <label class="input input-xl w-full">
+              $<input class="grow" type="number" name="amount" step="0.01" placeholder="Enter amount" x-model="form_fields.amount" required />
+            </label>
+            <select class="select select-xl w-auto" name="currency" x-model="form_fields.currency" required>
+              <option disabled selected>Currency</option>
+              <template x-for="currency in opts.currencies" :key="currency.value">
+                <option :value="currency.value" :selected="currency.value === form_fields.currency" x-text="currency.value"></option>
+              </template>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="hidden" x-ref="btnSubmitMainForm">Save</button>
+      </form>
+
+      <div class="modal-action">
+        <div x-show="!onwait">
+          <button class="btn btn-primary btn-lg rounded-full" @click="form_saveAndAddOther = false; $refs.btnSubmitMainForm.click()">Save</button>
+          <button class="btn btn-primary btn-lg rounded-full" x-show="!form_editMode" @click="form_saveAndAddOther = true; $refs.btnSubmitMainForm.click()">Save & add another</button>
+          <button class="btn btn-lg rounded-full" @click="add_record_modal.close()">Cancel</button>
+        </div>
+        <div class="flex justify-center w-full" x-show="onwait">
+          <span class="loading loading-spinner loading-xl text-primary"></span>
+        </div>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>✕</button>
+    </form>
+  </dialog>
+
+  <!-- Main Display Section -->
+  <section class="block w-full" x-show="!onwait">
+    <!-- Nav with filters -->
+    <nav class="flex justify-between items-center gap-2">
+      <label class="floating-label">
+        <span>Date range:</span>
+        <button popovertarget="daterange1" class="input input-border" style="anchor-name:--cally1" x-text="filter.date.from && filter.date.to ? `${filter.date.formattedFrom} - ${filter.date.formattedTo}` : 'Set range dates'"></button>
+      </label>
+      <div popover id="daterange1" class="dropdown bg-base-100 rounded-box shadow-lg" style="position-anchor:--cally1">
+        <calendar-range class="cally" name="daterange" @change="filter_Apply">
+          <calendar-month></calendar-month>
+        </calendar-range>
+      </div>
+
+      <label class="floating-label">
+        <span>Category:</span>
+        <select class="select" name="category" x-model="filter.category" @change="filter_Apply">
+          <option disabled selected>Filter by category</option>
+          <option value="all">All Categories</option>
+          <template x-for="(catgroup, index) in Object.keys(opts.groupedCategories)" :key="index">
+            <optgroup class="capitalize" :label="catgroup">
+              <template x-for="category in opts.groupedCategories[catgroup]" :key="category.value">
+                <option :value="category.value" :style="{ backgroundColor: category.style[0], color: category.style[1] }" x-text="category.value"></option>
+              </template>
+            </optgroup>
+          </template>
+        </select>
+      </label>
+
+      <label class="floating-label">
+        <span>Account:</span>
+        <select class="select" name="account" x-model="filter.account" @change="filter_Apply">
+          <option disabled selected>Filter by account</option>
+          <option value="all">All Accounts</option>
+          <template x-for="method in opts.accounts" :key="method.value">
+            <option class="uppercase" :value="method.value" :style="{ backgroundColor: method.style[0], color: method.style[1] }" x-text="method.value"></option>
+          </template>
+        </select>
+      </label>
+
+      <label class="floating-label">
+        <span>Transaction Methods</span>
+        <select class="select" name="transaction" x-model="filter.transaction" @change="filter_Apply">
+          <option disabled selected>Filter by Transaction Methods</option>
+          <option value="all">All Transaction Methods</option>
+          <template x-for="type in opts.transactions" :key="type.value">
+            <option class="capitalize" :value="type.value" :style="{ backgroundColor: type.style[0], color: type.style[1] }" x-text="type.value"></option>
+          </template>
+        </select>
+      </label>
+
+      <label class="floating-label">
+        <span>Currency:</span>
+        <select class="select" name="currency" x-model="filter.currency" @change="filter_Apply">
+          <option disabled selected>Filter by Currency</option>
+          <template x-for="currency in opts.currencies" :key="currency.value">
+            <option :value="currency.value" :selected="currency.value === filter.currency" x-text="currency.label"></option>
+          </template>
+        </select>
+      </label>
+
+      <div class="min-w-[200px] tooltip" data-tip="Filter by Amount">
+        <input type="range" class="range range-primary" min="0" :max="filter.maxAmount" step="10" value="0" name="amount" x-model="filter.amount" @change.debounce="filter_Apply" />
+
+        <div class="flex justify-between px-2.5 text-xs">
+          <span>$0</span>
+          <span x-text="filter.amount >= filter.maxAmount || filter.amount <= 0 ? 'Any Amount' : `$${filter.amount}`"></span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Table display -->
+    <hr class="border-gray-200 my-4" />
+
+		<div class="overflow-x-auto rounded-box border border-base-content/5  pb-15 bg-base-100">
+			<table class="table table-xs table-zebra">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Date</th>
+						<th>Category</th>
+						<th>Payee</th>
+						<th>Description</th>
+						<th>Transaction</th>
+						<th>Accounts</th>
+						<th>Amount</th>
+            <th width="24px"></th>
+					</tr>
+				</thead>
+
+				<tbody>
+					<template x-for="record in DATA" :key="record.id">
+						<tr @dblclick="form_Edit(record)">
+              <td x-text="record.id">[#ID]</td>
+							<td x-text="util_FormatDate(record.date)">[DATE]</td>
+							<td>
+								<span class="badge capitalize" :style="util_getStyleOption('categories', record.category)" x-text="record.category">[CATEGORY]</span>
+							</td>
+							<td x-text="record.payee">[PAYEE]</td>
+							<td x-text="record.description">[DESCRIPTION]</td>
+							<td>
+								<span class="badge capitalize" :style="util_getStyleOption('transactions', record.transaction)" x-text="record.transaction">[TRANSACTION]</span>
+							</td>
+							<td>
+								<span class="badge uppercase" :style="util_getStyleOption('accounts', record.account)" x-text="record.account">[ACCOUNTS]</span>
+							</td>
+							<td><span class="font-bold" x-text="'$' + (typeof record.amount !== 'number' ? parseFloat(record.amount) : record.amount).toFixed(2)">[AMOUNT]</span></td>
+              <td>
+                <div class="dropdown dropdown-left dropdown-center">
+									<div tabindex="0" role="button" class="btn btn-xs btn-ghost px-0.5">
+										<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg>
+									</div>
+									<ul tabindex="0" class="menu dropdown-content bg-base-300 rounded-box z-1 p-2 shadow-sm">
+										<li><a @click="form_Edit(record)">Edit</a></li>
+										<li><a @click="form_Delete(record)">Delete</a></li>
+									</ul>
+								</div>
+              </td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+		</div>
+
+    <button class="btn btn-success w-18 h-18 tooltip tooltip-left rounded-full fixed bottom-4 right-4 z-50" @click="form_Reset(); add_record_modal.showModal()" data-tip="Add new record">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+    </button>
+  </section>
+
+  <!-- Loader display -->
+  <div class="flex justify-center w-full" x-show="onwait">
+    <span class="loading loading-spinner loading-xl text-primary"></span>
+  </div>
+</main>

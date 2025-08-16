@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<base target="_top" />
+		<meta charset="utf-8" />
+		<title>EXSO-FinanceApp</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!-- AlpineJS -->
+		<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/mask@3.x.x/dist/cdn.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<!-- Date fns -->
+		<script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
+		<!-- Cally (calendar) -->
+		<script type="module" src="https://unpkg.com/cally"></script>
+		<!-- Notyf -->
+		<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css" />
+		<!-- Culori -->
+		<script src="https://cdn.jsdelivr.net/npm/culori"></script>
+		<!-- Google Icons -->
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=chevron_left,chevron_right,dark_mode,delete,edit,finance_mode,info,light_mode,more_vert,paid,trending_down,trending_up"
+		/>
+
+		<style type="text/css">
+			<?!= include('styles.css') ?>
+		</style>
+	</head>
+	<body data-theme="<?!= theme ?>">
+		<nav class="navbar bg-base-200 shadow-sm">
+			<div class="navbar-start">
+				<div class="dropdown">
+					<div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+						</svg>
+					</div>
+					<ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
+						<li><a>Item 1</a></li>
+						<li>
+							<a>Parent</a>
+							<ul class="p-2">
+								<li><a>Submenu 1</a></li>
+								<li><a>Submenu 2</a></li>
+							</ul>
+						</li>
+						<li><a>Item 3</a></li>
+					</ul>
+				</div>
+
+				<a class="btn btn-ghost text-xl">EXSO^Finance</a>
+			</div>
+			<div class="navbar-center hidden lg:flex">
+				<ul class="menu menu-horizontal px-1">
+					<li><a href="<?!= getURL('home') ?>">Home</a></li>
+					<li><a href="<?!= getURL('kpis') ?>">KPIs</a></li>
+					<li><a href="<?!= getURL('configs') ?>">Configs</a></li>
+				</ul>
+			</div>
+			<div class="navbar-end" x-data="THEME">
+				<label class="swap swap-rotate" id="theme-toggle">
+					<!-- this hidden checkbox controls the state -->
+					<input type="checkbox" @change="toggleTheme()" />
+					<!-- moon icon -->
+					<span class="swap-off h-6 w-6 material-symbols-outlined">dark_mode</span>
+					<!-- sun icon -->
+					<span class="swap-on h-6 w-6 material-symbols-outlined">light_mode</span>
+				</label>
+			</div>
+		</nav>
+
+		<?!= include(page, true) ?>
+
+		<?!= include('scripts.js') ?>
+	</body>
+</html>

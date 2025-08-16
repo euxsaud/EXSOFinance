@@ -1,0 +1,173 @@
+<main class="flex flex-wrap flex-col justify-center w-full 2xl:max-w-7xl xl:max-w-6xl mx-auto my-4 gap-4" x-data="CONFIGS">
+	<h2 class="text-2xl font-bold mb-4">Configurations</h2>
+
+	<ul class="menu menu-horizontal gap-2 mb-4">
+		<li><button class="btn" :class="{'btn-primary': page === 'accounts'}" @click="page = 'accounts'">Accounts</button></li>
+		<li><button class="btn" :class="{'btn-primary': page === 'categories'}" @click="page = 'categories'">Custom Categories</button></li>
+	</ul>
+
+	<section class="flex flex-wrap gap-4 justify-center-safe w-full" x-show="page === 'accounts'">
+		<h2 class="w-full text-left font-bold">Add new account</h2>
+		<form class="flex justify-between gap-2 w-full" @submit.prevent="account_formSubmit">
+			<label class="floating-label">
+				<span>Name account:</span>
+				<input type="text" name="name" placeholder="Enter account name" class="input" :class="{'uppercase': account_fields.value}" :disabled="account_editMode" required x-model="account_fields.value" />
+			</label>
+
+			<label class="floating-label">
+				<span>Provider:</span>
+				<input type="text" name="provider" placeholder="Provider (e.g. AMEX, Chase, etc.)" class="input" required x-model="account_fields.provider" />
+			</label>
+
+			<label class="floating-label">
+				<span>Type:</span>
+				<select class="select" name="type" required x-model="account_fields.type">
+					<option value="" disabled selected>Select account type</option>
+					<option value="cash">Cash</option>
+					<option value="debit">Debit</option>
+					<option value="credit">Credit</option>
+					<option value="savings">Savings</option>
+					<option value="investment">Investment</option>
+					<option value="checking">Checking</option>
+					<option value="other">Other</option>
+				</select>
+			</label>
+
+			<label class="floating-label">
+				<span>Limit:</span>
+				<input type="number" name="limit" placeholder="Enter account limit" class="input" x-model="account_fields.limit" />
+			</label>
+
+			<label class="floating-label">
+				<span>Currency:</span>
+				<select class="select" name="currency" required x-model="account_fields.currency">
+					<option value="" disabled selected>Select currency</option>
+					<template x-for="currency in opts.currencies" :key="currency.value">
+						<option :value="currency.value" :selected="currency.value === account_fields.currency" x-text="currency.label"></option>
+					</template>
+				</select>
+			</label>
+
+			<label class="floating-label">
+				<span>Bg color:</span>
+				<input type="color" name="bgColor" class="input w-24" value="#000000" x-model="account_fields.bgColor" />
+			</label>
+
+			<label class="floating-label">
+				<span>Text color:</span>
+				<input type="color" name="textColor" class="input w-24" value="#FFFFFF" x-model="account_fields.textColor" />
+			</label>
+
+			<button type="submit" class="btn btn-primary rounded-full" :class="account_editMode ? 'btn-secondary' : 'btn-primary'" x-text="account_editMode ? 'Update' : 'Create'">[SUBMIT/UPDATE]</button>
+			<button type="button" class="btn btn-error btn-soft rounded-full" @click="account_resetForm" x-show="account_editMode">Cancel Update</button>
+		</form>
+
+		<h2 class="w-full text-left font-bold">Accounts List</h2>
+		<table class="table w-full mt-4" x-show="!onwait && opts.accounts.length">
+			<thead>
+				<tr>
+					<th>#ID</th>
+					<th>Name</th>
+					<th>Provider</th>
+					<th>Type</th>
+					<th>Limit</th>
+					<th>Currency</th>
+					<th width="24px">&nbsp;</th>
+				</tr>
+			</thead>
+			<tbody>
+				<template x-for="account in opts.accounts" :key="account.value">
+					<tr :style="{ backgroundColor: account.style[0], color: account.style[1] }">
+						<td width="24px"><span class="opacity-60" x-text="account.id">[ACCOUNT ID]</span></td>
+						<td x-text="account.value" class="uppercase font-semibold">[ACCOUNT NAME]</td>
+						<td x-text="account.provider">[ACCOUNT PROVIDER]</td>
+						<td x-text="account.type" class="font-bold capitalize">[ACCOUNT TYPE]</td>
+						<td><span x-text="account.limit ? util_FormatCurrency(account.limit) : 'No defined'" :class="account.limit ? 'font-bold' : 'opacity-60'">[LIMIT]</span></td>
+						<td x-text="opts.currencies.find(c => c.value === account.currency)?.label" class="font-bold capitalize">[CURRENCY]</td>
+						<td>
+							<div class="dropdown dropdown-left dropdown-center">
+								<div tabindex="0" role="button" class="btn btn-xs btn-ghost px-0.5">
+									<span class="material-symbols-outlined">more_vert</span>
+								</div>
+								<ul tabindex="0" class="menu dropdown-content bg-base-300 rounded-box z-1 p-2 shadow-sm">
+									<li><a @click="account_edit(account)"><span class="material-symbols-outlined">edit</span> Edit</a></li>
+									<li><a @click="account_delete(account)"><span class="material-symbols-outlined">delete</span> Delete</a></li>
+								</ul>
+							</div>
+						</td>
+					</tr>
+				</template>
+			</tbody>
+		</table>
+
+		<div class="alert alert-warning" x-show="!onwait && !opts.accounts.length">
+			<span class="material-symbols-outlined">info</span>
+			No accounts found. Please create one.
+		</div>
+
+		<div class="loading loading-spinner loading-xl text-primary" x-show="onwait"></div>
+	</section>
+
+	<section class="grid grid-cols-3 gap-4 justify-center-safe w-full" x-show="page === 'categories'">
+		<form class="flex flex-col justify-between gap-4 h-fit" @submit.prevent="cat_formSubmit">
+			<h2 class="w-full text-left font-bold">Add new custom category</h2>
+			<label class="floating-label">
+				<span>Category Name:</span>
+				<input type="text" name="name" placeholder="Enter category name" class="input w-full" required x-bind:disabled="cat_editMode" x-model="cat_fields.value" />
+			</label>
+
+			<label class="floating-label">
+				<span>Bg color:</span>
+				<input type="color" name="bgColor" class="input w-full" value="#000000" x-model="cat_fields.bgColor" />
+			</label>
+
+			<label class="floating-label">
+				<span>Text color:</span>
+				<input type="color" name="textColor" class="input w-full" value="#FFFFFF" x-model="cat_fields.textColor" />
+			</label>
+
+			<button type="submit" class="btn btn-primary rounded-full" :class="cat_editMode ? 'btn-secondary' : 'btn-primary'" x-text="cat_editMode ? 'Update' : 'Create'">[SUBMIT/UPDATE]</button>
+			<button type="button" class="btn btn-error btn-soft rounded-full" @click="cat_resetForm" x-show="cat_editMode">Cancel Update</button>
+		</form>
+
+		<div class="flex justify-center col-span-2 h-fit">
+			<table class="table w-full" x-show="!onwait && opts.customCategories.length">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Bg Color</th>
+						<th>Text Color</th>
+						<th width="24px">&nbsp;</th>
+					</tr>
+				</thead>
+				<tbody>
+					<template x-for="category in opts.customCategories" :key="category.value">
+						<tr :style="{ backgroundColor: category.style[0], color: category.style[1] }">
+							<td x-text="category.value" class="uppercase font-semibold">[CATEGORY NAME]</td>
+							<td><span x-text="category.style[0]" class="font-bold">[BG COLOR]</span></td>
+							<td><span x-text="category.style[1]" class="font-bold">[TEXT COLOR]</span></td>
+							<td>
+								<div class="dropdown dropdown-left dropdown-center">
+									<div tabindex="0" role="button" class="btn btn-xs btn-ghost px-0.5">
+										<span class="material-symbols-outlined">more_vert</span>
+									</div>
+									<ul tabindex="0" class="menu dropdown-content bg-base-300 rounded-box z-1 p-2 shadow-sm">
+										<li><a @click="cat_edit(category)"><span class="material-symbols-outlined">edit</span> Edit</a></li>
+										<li><a @click="cat_delete(category)"><span class="material-symbols-outlined">delete</span> Delete</a></li>
+									</ul>
+								</div>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+
+			<div class="alert alert-warning h-fit" x-show="!onwait && !opts.customCategories.length">
+				<span class="material-symbols-outlined">info</span>
+				No custom categories found. Please create one.
+			</div>
+
+			<div class="loading loading-spinner loading-xl text-primary" x-show="onwait"></div>
+		</div>
+	</section>
+</main>

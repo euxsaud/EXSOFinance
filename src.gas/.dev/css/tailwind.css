@@ -1,0 +1,30 @@
+/* @import "tailwindcss"; */
+@import "tailwindcss" source(none);
+
+@source "../../**/*.{html,js}";
+
+@plugin 'daisyui' {
+  themes: light --default, dark --prefersdark, lightgreen;
+  root: ":root"
+}
+
+html, body {
+  height: auto;
+  min-height: 100vh;
+  background-color: var(--color-base-100);
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+.material-symbols-outlined.filled {
+  font-variation-settings:
+  'FILL' 1,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}

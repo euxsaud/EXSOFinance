@@ -1,0 +1,119 @@
+<dialog class="modal" id="add_record_modal">
+	<div class="modal-box">
+		<h3 class="font-bold text-lg" x-text="form_editMode ? 'Edit Record' : 'Add New Record'">
+			[Add New Record/Edit record]
+		</h3>
+
+		<hr class="border-gray-200 my-2" />
+
+		<form x-ref="MainForm" class="grid grid-cols-1 gap-3" @submit.prevent="form_Submit">
+			<div>
+				<legend class="font-semibold">
+					Date*
+				</legend>
+				<input type="date" class="input input-md w-full" name="date" x-model="form_fields.date" required />
+			</div>
+
+			<div>
+				<legend class="font-semibold">
+					Category*
+				</legend>
+				<select class="select w-full" name="category" x-model="form_fields.category" required>
+					<option value="" disabled selected>
+						Select a category
+					</option>
+					<template x-for="(catgroup, index) in Object.keys(options.groupedCategories)" :key="index">
+						<optgroup :label="catgroup">
+							<template x-for="category in options.groupedCategories[catgroup]" :key="category.value">
+								<option :value="category.value" :style="{ backgroundColor: category.bgcolor, color: category.textcolor }" x-text="category.value"></option>
+							</template>
+						</optgroup>
+					</template>
+				</select>
+			</div>
+
+			<div>
+				<legend class="font-semibold">
+					Payee
+				</legend>
+				<input class="input w-full" type="text" name="payee" placeholder="Write the name of the payee" x-model="form_fields.payee" />
+			</div>
+
+			<div>
+				<legend class="font-semibold">
+					Description
+				</legend>
+				<textarea class="textarea w-full" name="description" placeholder="Write a brief description" x-model="form_fields.description"></textarea>
+			</div>
+
+			<div>
+				<legend class="font-semibold">
+					Transaction Method*
+				</legend>
+				<select class="select w-full" name="type" x-model="form_fields.transaction" required>
+					<option value="" disabled selected>
+						Select transaction type
+					</option>
+					<template x-for="type in options.transactions" :key="type.value">
+						<option :value="type.value" :style="{ backgroundColor: type.bgcolor, color: type.textcolor }" x-text="type.value"></option>
+					</template>
+				</select>
+			</div>
+
+			<div>
+				<legend class="font-semibold">
+					Account*
+				</legend>
+				<select class="select w-full" name="paymentMethod" x-model="form_fields.account" required>
+					<option disabled selected>
+						Select payment method
+					</option>
+					<template x-for="account in options.accounts" :key="account.value">
+						<option :value="account.value" :style="{ backgroundColor: account.bgcolor, color: account.textcolor }" x-text="account.value"></option>
+					</template>
+				</select>
+			</div>
+
+			<div>
+				<legend class="font-semibold">Amount*</legend>
+				<div class="join w-full">
+					<label class="input input-xl w-full">
+						$<input class="grow" type="number" name="amount" step="0.01" placeholder="Enter amount" x-model="form_fields.amount" required />
+					</label>
+					<select class="select select-xl w-auto" name="currency" x-model="form_fields.currency" required>
+						<option value="" disabled :selected="!options.currencies.length">Currency</option>
+						<template x-for="currency in options.currencies" :key="currency.value">
+							<option :value="currency.value" :selected="currency.value === form_fields.currency" x-text="currency.value"></option>
+						</template>
+					</select>
+				</div>
+			</div>
+
+			<button type="submit" class="hidden" x-ref="btnSubmitMainForm">
+				Save
+			</button>
+		</form>
+
+		<div class="modal-action">
+			<div x-show="!onwait">
+				<button class="btn btn-primary btn-lg rounded-full" @click="form_saveAndAddOther = false; $refs.btnSubmitMainForm.click()">
+					Save
+				</button>
+				<button class="btn btn-primary btn-lg rounded-full" x-show="!form_editMode" @click="form_saveAndAddOther = true; $refs.btnSubmitMainForm.click()">
+					Save & add another
+				</button>
+				<button class="btn btn-lg rounded-full" @click="add_record_modal.close()">
+					Cancel
+				</button>
+			</div>
+			<div class="flex justify-center w-full" x-show="onwait">
+				<span class="loading loading-spinner loading-xl text-primary"></span>
+			</div>
+		</div>
+	</div>
+	<form method="dialog" class="modal-backdrop">
+		<button>
+			✕
+		</button>
+	</form>
+</dialog>
