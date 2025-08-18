@@ -48,6 +48,7 @@ Use clasp to sync code with Google Apps Script.
 -   Auto-upload on file changes:
     ```bash
     clasp push --watch
+    ```
     | Tip: If there are remote changes, run clasp pull, resolve locally, and then clasp push.
 
 ## 🛠️ NPM Scripts
